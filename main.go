@@ -169,13 +169,29 @@ func main() {
 	server.Use(middleware.I18n())
 	middleware.SetUpLogger(server)
 	// Initialize session store
+	sessionCookieSameSite := http.SameSiteLaxMode
+	switch strings.TrimSpace(strings.ToLower(os.Getenv("SESSION_COOKIE_SAMESITE"))) {
+	case "", "lax":
+		sessionCookieSameSite = http.SameSiteLaxMode
+	case "strict":
+		sessionCookieSameSite = http.SameSiteStrictMode
+	case "none":
+		sessionCookieSameSite = http.SameSiteNoneMode
+	default:
+		common.SysLog("invalid SESSION_COOKIE_SAMESITE, fallback to lax")
+	}
+	sessionCookieSecure := common.GetEnvOrDefaultBool("SESSION_COOKIE_SECURE", false)
+	if sessionCookieSameSite == http.SameSiteNoneMode && !sessionCookieSecure {
+		common.SysLog("SESSION_COOKIE_SAMESITE=none but SESSION_COOKIE_SECURE=false, cookies may be rejected by browsers")
+	}
+
 	store := cookie.NewStore([]byte(common.SessionSecret))
 	store.Options(sessions.Options{
 		Path:     "/",
 		MaxAge:   2592000, // 30 days
 		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteStrictMode,
+		Secure:   sessionCookieSecure,
+		SameSite: sessionCookieSameSite,
 	})
 	server.Use(sessions.Sessions("session", store))
 

@@ -281,12 +281,25 @@ func GetChannelsByTag(tag string, idSort bool, selectAll bool) ([]*Channel, erro
 	if idSort {
 		order = "id desc"
 	}
-	query := DB.Where("tag = ?", tag).Order(order)
+	query := applyTagCondition(DB, tag).Order(order)
 	if !selectAll {
 		query = query.Omit("key")
 	}
 	err := query.Find(&channels).Error
 	return channels, err
+}
+
+func applyTagCondition(query *gorm.DB, tag string) *gorm.DB {
+	if tag == "" {
+		return query.Where("tag IS NULL OR tag = ''")
+	}
+	return query.Where("tag = ?", tag)
+}
+
+func HasUntaggedChannels() (bool, error) {
+	var count int64
+	err := DB.Model(&Channel{}).Where("tag IS NULL OR tag = ''").Count(&count).Error
+	return count > 0, err
 }
 
 func SearchChannels(keyword string, group string, model string, idSort bool) ([]*Channel, error) {
@@ -680,7 +693,7 @@ func UpdateChannelStatus(channelId int, usingKey string, status int, reason stri
 }
 
 func EnableChannelByTag(tag string) error {
-	err := DB.Model(&Channel{}).Where("tag = ?", tag).Update("status", common.ChannelStatusEnabled).Error
+	err := applyTagCondition(DB.Model(&Channel{}), tag).Update("status", common.ChannelStatusEnabled).Error
 	if err != nil {
 		return err
 	}
@@ -689,7 +702,7 @@ func EnableChannelByTag(tag string) error {
 }
 
 func DisableChannelByTag(tag string) error {
-	err := DB.Model(&Channel{}).Where("tag = ?", tag).Update("status", common.ChannelStatusManuallyDisabled).Error
+	err := applyTagCondition(DB.Model(&Channel{}), tag).Update("status", common.ChannelStatusManuallyDisabled).Error
 	if err != nil {
 		return err
 	}
@@ -730,7 +743,7 @@ func EditChannelByTag(tag string, newTag *string, modelMapping *string, models *
 		updateData.HeaderOverride = headerOverride
 	}
 
-	err := DB.Model(&Channel{}).Where("tag = ?", tag).Updates(updateData).Error
+	err := applyTagCondition(DB.Model(&Channel{}), tag).Updates(updateData).Error
 	if err != nil {
 		return err
 	}
@@ -778,14 +791,48 @@ func DeleteDisabledChannel() (int64, error) {
 	return result.RowsAffected, result.Error
 }
 
-func GetPaginatedTags(offset int, limit int) ([]*string, error) {
-	var tags []*string
-	err := DB.Model(&Channel{}).Select("DISTINCT tag").Where("tag != ''").Offset(offset).Limit(limit).Find(&tags).Error
-	return tags, err
+func GetPaginatedTags(offset int, limit int) ([]string, error) {
+	tags := make([]string, 0, limit)
+	if limit <= 0 {
+		return tags, nil
+	}
+
+	hasUntagged, err := HasUntaggedChannels()
+	if err != nil {
+		return nil, err
+	}
+
+	nonEmptyOffset := offset
+	remainingLimit := limit
+	if hasUntagged {
+		if offset == 0 {
+			tags = append(tags, "")
+			remainingLimit--
+		} else {
+			nonEmptyOffset--
+		}
+	}
+
+	if remainingLimit <= 0 {
+		return tags, nil
+	}
+
+	var nonEmptyTags []string
+	err = DB.Model(&Channel{}).
+		Distinct("tag").
+		Where("tag IS NOT NULL AND tag != ''").
+		Offset(nonEmptyOffset).
+		Limit(remainingLimit).
+		Pluck("tag", &nonEmptyTags).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return append(tags, nonEmptyTags...), nil
 }
 
-func SearchTags(keyword string, group string, model string, idSort bool) ([]*string, error) {
-	var tags []*string
+func SearchTags(keyword string, group string, model string, idSort bool) ([]string, error) {
+	var tags []string
 	modelsCol := "`models`"
 
 	// 如果是 PostgreSQL，使用双引号
@@ -827,15 +874,26 @@ func SearchTags(keyword string, group string, model string, idSort bool) ([]*str
 
 	subQuery := baseQuery.Where(whereClause, args...).
 		Select("tag").
-		Where("tag != ''").
+		Where("tag IS NOT NULL AND tag != ''").
 		Order(order)
 
 	err := DB.Table("(?) as sub", subQuery).
 		Select("DISTINCT tag").
-		Find(&tags).Error
+		Pluck("tag", &tags).Error
 
 	if err != nil {
 		return nil, err
+	}
+
+	var untaggedCount int64
+	err = baseQuery.Where(whereClause, args...).
+		Where("tag IS NULL OR tag = ''").
+		Count(&untaggedCount).Error
+	if err != nil {
+		return nil, err
+	}
+	if untaggedCount > 0 {
+		tags = append([]string{""}, tags...)
 	}
 
 	return tags, nil
@@ -969,6 +1027,21 @@ func CountAllTags() (int64, error) {
 	var total int64
 	err := DB.Model(&Channel{}).Where("tag is not null AND tag != ''").Distinct("tag").Count(&total).Error
 	return total, err
+}
+
+func CountAllTagGroups() (int64, error) {
+	total, err := CountAllTags()
+	if err != nil {
+		return 0, err
+	}
+	hasUntagged, err := HasUntaggedChannels()
+	if err != nil {
+		return 0, err
+	}
+	if hasUntagged {
+		total++
+	}
+	return total, nil
 }
 
 // Get channels of specified type with pagination

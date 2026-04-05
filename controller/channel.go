@@ -95,10 +95,7 @@ func GetAllChannels(c *gin.Context) {
 			return
 		}
 		for _, tag := range tags {
-			if tag == nil || *tag == "" {
-				continue
-			}
-			tagChannels, err := model.GetChannelsByTag(*tag, idSort, false)
+			tagChannels, err := model.GetChannelsByTag(tag, idSort, false)
 			if err != nil {
 				continue
 			}
@@ -117,7 +114,7 @@ func GetAllChannels(c *gin.Context) {
 			}
 			channelData = append(channelData, filtered...)
 		}
-		total, _ = model.CountAllTags()
+		total, _ = model.CountAllTagGroups()
 	} else {
 		baseQuery := model.DB.Model(&model.Channel{})
 		if typeFilter >= 0 {
@@ -264,11 +261,9 @@ func SearchChannels(c *gin.Context) {
 			return
 		}
 		for _, tag := range tags {
-			if tag != nil && *tag != "" {
-				tagChannel, err := model.GetChannelsByTag(*tag, idSort, false)
-				if err == nil {
-					channelData = append(channelData, tagChannel...)
-				}
+			tagChannel, err := model.GetChannelsByTag(tag, idSort, false)
+			if err == nil {
+				channelData = append(channelData, tagChannel...)
 			}
 		}
 	} else {
@@ -709,7 +704,7 @@ type ChannelTag struct {
 func DisableTagChannels(c *gin.Context) {
 	channelTag := ChannelTag{}
 	err := c.ShouldBindJSON(&channelTag)
-	if err != nil || channelTag.Tag == "" {
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "参数错误",
@@ -732,7 +727,7 @@ func DisableTagChannels(c *gin.Context) {
 func EnableTagChannels(c *gin.Context) {
 	channelTag := ChannelTag{}
 	err := c.ShouldBindJSON(&channelTag)
-	if err != nil || channelTag.Tag == "" {
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "参数错误",
@@ -759,13 +754,6 @@ func EditTagChannels(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "参数错误",
-		})
-		return
-	}
-	if channelTag.Tag == "" {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "tag不能为空",
 		})
 		return
 	}
@@ -1116,14 +1104,6 @@ func BatchSetChannelTag(c *gin.Context) {
 
 func GetTagModels(c *gin.Context) {
 	tag := c.Query("tag")
-	if tag == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "tag不能为空",
-		})
-		return
-	}
-
 	channels, err := model.GetChannelsByTag(tag, false, false) // idSort=false, selectAll=false
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

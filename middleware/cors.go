@@ -4,14 +4,19 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 func CORS() gin.HandlerFunc {
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true
+	config := cors.Config{
+		AllowOriginFunc: func(origin string) bool {
+			return true
+		},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"*"},
+		MaxAge:       12 * time.Hour,
+	}
 	config.AllowCredentials = true
-	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
-	config.AllowHeaders = []string{"*"}
 	return cors.New(config)
 }
 
