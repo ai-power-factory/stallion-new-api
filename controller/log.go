@@ -148,6 +148,85 @@ func GetLogsSelfStat(c *gin.Context) {
 	return
 }
 
+// MaxExportRecords 导出接口允许的最大记录数
+const MaxExportRecords = 10000
+
+// ExportAllLogs 导出所有日志（管理员），支持最多 MaxExportRecords 条记录
+// 复用 model.GetAllLogs 查询逻辑，但放宽分页限制以便一次性导出大量数据
+func ExportAllLogs(c *gin.Context) {
+	// 解析 page_size，上限限制为 MaxExportRecords
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	if pageSize <= 0 || pageSize > MaxExportRecords {
+		pageSize = MaxExportRecords
+	}
+
+	// 解析筛选参数，与 GetAllLogs 保持一致
+	logType, _ := strconv.Atoi(c.Query("type"))
+	startTimestamp, _ := strconv.ParseInt(c.Query("start_timestamp"), 10, 64)
+	endTimestamp, _ := strconv.ParseInt(c.Query("end_timestamp"), 10, 64)
+	username := c.Query("username")
+	tokenName := c.Query("token_name")
+	modelName := c.Query("model_name")
+	channel, _ := strconv.Atoi(c.Query("channel"))
+	group := c.Query("group")
+	requestId := c.Query("request_id")
+
+	// 从第 0 条开始，获取 pageSize 条记录
+	logs, total, err := model.GetAllLogs(logType, startTimestamp, endTimestamp, modelName, username, tokenName, 0, pageSize, channel, group, requestId)
+	if err != nil {
+		common.SysError("failed to export all logs: " + err.Error())
+		common.ApiError(c, err)
+		return
+	}
+
+	// 构造分页信息并返回
+	pageInfo := &common.PageInfo{
+		Page:     1,
+		PageSize: pageSize,
+	}
+	pageInfo.SetTotal(int(total))
+	pageInfo.SetItems(logs)
+	common.ApiSuccess(c, pageInfo)
+}
+
+// ExportUserLogs 导出用户自己的日志，支持最多 MaxExportRecords 条记录
+// 复用 model.GetUserLogs 查询逻辑，但放宽分页限制以便一次性导出大量数据
+func ExportUserLogs(c *gin.Context) {
+	// 解析 page_size，上限限制为 MaxExportRecords
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	if pageSize <= 0 || pageSize > MaxExportRecords {
+		pageSize = MaxExportRecords
+	}
+
+	userId := c.GetInt("id")
+
+	// 解析筛选参数，与 GetUserLogs 保持一致
+	logType, _ := strconv.Atoi(c.Query("type"))
+	startTimestamp, _ := strconv.ParseInt(c.Query("start_timestamp"), 10, 64)
+	endTimestamp, _ := strconv.ParseInt(c.Query("end_timestamp"), 10, 64)
+	tokenName := c.Query("token_name")
+	modelName := c.Query("model_name")
+	group := c.Query("group")
+	requestId := c.Query("request_id")
+
+	// 从第 0 条开始，获取 pageSize 条记录
+	logs, total, err := model.GetUserLogs(userId, logType, startTimestamp, endTimestamp, modelName, tokenName, 0, pageSize, group, requestId)
+	if err != nil {
+		common.SysError("failed to export user logs: " + err.Error())
+		common.ApiError(c, err)
+		return
+	}
+
+	// 构造分页信息并返回
+	pageInfo := &common.PageInfo{
+		Page:     1,
+		PageSize: pageSize,
+	}
+	pageInfo.SetTotal(int(total))
+	pageInfo.SetItems(logs)
+	common.ApiSuccess(c, pageInfo)
+}
+
 func DeleteHistoryLogs(c *gin.Context) {
 	targetTimestamp, _ := strconv.ParseInt(c.Query("target_timestamp"), 10, 64)
 	if targetTimestamp == 0 {

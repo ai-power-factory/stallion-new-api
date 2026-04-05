@@ -121,6 +121,7 @@ func SetApiRouter(router *gin.Engine) {
 				adminRoute.DELETE("/:id/oauth/bindings/:provider_id", controller.UnbindCustomOAuthByAdmin)
 				adminRoute.DELETE("/:id/bindings/:binding_type", controller.AdminClearUserBinding)
 				adminRoute.GET("/:id", controller.GetUser)
+				adminRoute.GET("/:id/groups", controller.AdminGetUserGroups)
 				adminRoute.POST("/", controller.CreateUser)
 				adminRoute.POST("/manage", controller.ManageUser)
 				adminRoute.PUT("/", controller.UpdateUser)
@@ -130,6 +131,19 @@ func SetApiRouter(router *gin.Engine) {
 				// Admin 2FA routes
 				adminRoute.GET("/2fa/stats", controller.Admin2FAStats)
 				adminRoute.DELETE("/:id/2fa", controller.AdminDisable2FA)
+
+				// 管理员用户详情页 - 令牌管理
+				adminRoute.GET("/:id/tokens", controller.AdminGetUserTokens)
+				adminRoute.GET("/:id/tokens/search", controller.AdminSearchUserTokens)
+				adminRoute.GET("/:id/tokens/:tokenId", controller.AdminGetUserToken)
+				adminRoute.POST("/:id/tokens", controller.AdminAddUserToken)
+				adminRoute.POST("/:id/tokens/batch", controller.AdminDeleteUserTokenBatch)
+				adminRoute.PUT("/:id/tokens", controller.AdminUpdateUserToken)
+				adminRoute.DELETE("/:id/tokens/:tokenId", controller.AdminDeleteUserToken)
+				adminRoute.POST("/:id/tokens/:tokenId/key", controller.AdminGetUserTokenKey)
+
+				// 管理员用户详情页 - 使用日志
+				adminRoute.GET("/:id/logs", controller.AdminGetUserLogs)
 			}
 		}
 
@@ -287,8 +301,10 @@ func SetApiRouter(router *gin.Engine) {
 		logRoute.GET("/self/stat", middleware.UserAuth(), controller.GetLogsSelfStat)
 		logRoute.GET("/channel_affinity_usage_cache", middleware.AdminAuth(), controller.GetChannelAffinityUsageCacheStats)
 		logRoute.GET("/search", middleware.AdminAuth(), controller.SearchAllLogs)
+		logRoute.GET("/export", middleware.AdminAuth(), middleware.SearchRateLimit(), controller.ExportAllLogs)
 		logRoute.GET("/self", middleware.UserAuth(), controller.GetUserLogs)
 		logRoute.GET("/self/search", middleware.UserAuth(), middleware.SearchRateLimit(), controller.SearchUserLogs)
+		logRoute.GET("/self/export", middleware.UserAuth(), middleware.SearchRateLimit(), controller.ExportUserLogs)
 
 		dataRoute := apiRouter.Group("/data")
 		dataRoute.GET("/", middleware.AdminAuth(), controller.GetAllQuotaDates)
