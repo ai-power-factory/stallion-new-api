@@ -50,7 +50,7 @@ const TaskLogsFilters = ({
           <div className='col-span-1 lg:col-span-2'>
             <Form.DatePicker
               field='dateRange'
-              className='w-full'
+              className='w-full logs-date-range-picker'
               type='dateTimeRange'
               placeholder={[t('开始时间'), t('结束时间')]}
               showClear

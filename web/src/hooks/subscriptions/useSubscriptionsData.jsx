@@ -37,7 +37,7 @@ export const useSubscriptionsData = () => {
   // Drawer states
   const [showEdit, setShowEdit] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
-  const [sheetPlacement, setSheetPlacement] = useState('left'); // 'left' | 'right'
+  const [sheetPlacement, setSheetPlacement] = useState('right'); // 'left' | 'right'
 
   // Load subscription plans
   const loadPlans = async () => {
@@ -107,7 +107,7 @@ export const useSubscriptionsData = () => {
   };
 
   const openCreate = () => {
-    setSheetPlacement('left');
+    setSheetPlacement('right');
     setEditingPlan(null);
     setShowEdit(true);
   };

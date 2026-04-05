@@ -224,7 +224,7 @@ const PrefillGroupManagement = ({ visible, onClose }) => {
   return (
     <>
       <SideSheet
-        placement='left'
+        placement='right'
         title={
           <Space>
             <Tag color='blue' shape='circle'>

@@ -65,7 +65,7 @@ const EditModelModal = (props) => {
   const isMobile = useIsMobile();
   const formApiRef = useRef(null);
   const isEdit = props.editingModel && props.editingModel.id !== undefined;
-  const placement = useMemo(() => (isEdit ? 'right' : 'left'), [isEdit]);
+  const placement = useMemo(() => 'right', []);
 
   // 供应商列表
   const [vendors, setVendors] = useState([]);

@@ -292,7 +292,7 @@ const EditTagModal = (props) => {
 
   useEffect(() => {
     const fetchTagModels = async () => {
-      if (!tag) return;
+      if (tag === undefined || tag === null) return;
       setLoading(true);
       try {
         const res = await API.get(`/api/channel/tag/models?tag=${tag}`);

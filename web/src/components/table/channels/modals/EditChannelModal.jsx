@@ -2129,7 +2129,7 @@ const EditChannelModal = (props) => {
   return (
     <>
       <SideSheet
-        placement={isEdit ? 'right' : 'left'}
+        placement='right'
         title={
           <div className='flex items-center justify-between w-full'>
             <Space>
@@ -3215,30 +3215,6 @@ const EditChannelModal = (props) => {
                   {showApiConfigCard && (
                     <div onClick={handleApiConfigSecretClick}>
 
-                      {inputs.type === 40 && (
-                        <Banner
-                          type='info'
-                          description={
-                            <div>
-                              <Text strong>{t('邀请链接')}:</Text>
-                              <Text
-                                link
-                                underline
-                                className='ml-2 cursor-pointer'
-                                onClick={() =>
-                                  window.open(
-                                    'https://cloud.siliconflow.cn/i/hij0YNTZ',
-                                  )
-                                }
-                              >
-                                https://cloud.siliconflow.cn/i/hij0YNTZ
-                              </Text>
-                            </div>
-                          }
-                          className='!rounded-lg'
-                        />
-                      )}
-
                       {inputs.type === 3 && (
                         <>
                           <Banner
@@ -3696,11 +3672,11 @@ const EditChannelModal = (props) => {
                 className='fixed top-0 h-full overflow-y-auto z-[999] semi-sidesheet-inner'
                 style={{
                   width: 600,
-                  [isEdit ? 'right' : 'left']: 600,
+                  right: 600,
                   backgroundColor: 'var(--semi-color-bg-0)',
-                  borderLeft: isEdit ? 'none' : '1px solid var(--semi-color-border)',
-                  borderRight: isEdit ? '1px solid var(--semi-color-border)' : 'none',
-                  animation: `slideIn${isEdit ? 'Left' : 'Right'} 0.3s ease-out`,
+                  borderLeft: 'none',
+                  borderRight: '1px solid var(--semi-color-border)',
+                  animation: 'slideInLeft 0.3s ease-out',
                 }}
               >
                 <div className='semi-sidesheet-header'>

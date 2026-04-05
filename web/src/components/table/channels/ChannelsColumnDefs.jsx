@@ -581,6 +581,7 @@ export const getChannelsColumns = ({
           return (
             <div>
               <InputNumber
+                className='channel-table-number-input'
                 style={{ width: 70 }}
                 name='priority'
                 onBlur={(e) => {
@@ -597,6 +598,7 @@ export const getChannelsColumns = ({
         } else {
           return (
             <InputNumber
+              className='channel-table-number-input'
               style={{ width: 70 }}
               name='priority'
               keepFocus={true}
@@ -636,6 +638,7 @@ export const getChannelsColumns = ({
           return (
             <div>
               <InputNumber
+                className='channel-table-number-input'
                 style={{ width: 70 }}
                 name='weight'
                 onBlur={(e) => {
@@ -652,6 +655,7 @@ export const getChannelsColumns = ({
         } else {
           return (
             <InputNumber
+              className='channel-table-number-input'
               style={{ width: 70 }}
               name='weight'
               keepFocus={true}

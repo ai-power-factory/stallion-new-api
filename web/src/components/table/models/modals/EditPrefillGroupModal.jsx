@@ -114,7 +114,7 @@ const EditPrefillGroupModal = ({
 
   return (
     <SideSheet
-      placement='left'
+      placement='right'
       title={
         <Space>
           {isEdit ? (

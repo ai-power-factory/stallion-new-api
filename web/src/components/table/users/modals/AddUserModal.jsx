@@ -73,7 +73,7 @@ const AddUserModal = (props) => {
   return (
     <>
       <SideSheet
-        placement={'left'}
+        placement='right'
         title={
           <Space>
             <Tag color='green' shape='circle'>

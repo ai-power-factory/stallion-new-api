@@ -81,7 +81,6 @@ const Dashboard = () => {
     dashboardData.times,
     dashboardData.trendData,
     dashboardData.performanceMetrics,
-    dashboardData.navigate,
     dashboardData.t,
   );
 
@@ -141,12 +140,9 @@ const Dashboard = () => {
   return (
     <div className='h-full'>
       <DashboardHeader
-        getGreeting={dashboardData.getGreeting}
-        greetingVisible={dashboardData.greetingVisible}
         showSearchModal={dashboardData.showSearchModal}
         refresh={handleRefresh}
         loading={dashboardData.loading}
-        t={dashboardData.t}
       />
 
       <SearchModal

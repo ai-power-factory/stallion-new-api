@@ -61,7 +61,7 @@ export const useChannelsData = () => {
   const [showEditTag, setShowEditTag] = useState(false);
   const [editingTag, setEditingTag] = useState('');
   const [selectedChannels, setSelectedChannels] = useState([]);
-  const [enableTagMode, setEnableTagMode] = useState(false);
+  const [enableTagMode, setEnableTagMode] = useState(true);
   const [showBatchSetTag, setShowBatchSetTag] = useState(false);
   const [batchSetTagValue, setBatchSetTagValue] = useState('');
   const [compactMode, setCompactMode] = useTableCompactMode('channels');
@@ -148,8 +148,9 @@ export const useChannelsData = () => {
     const localIdSort = localStorage.getItem('id-sort') === 'true';
     const localPageSize =
       parseInt(localStorage.getItem('page-size')) || ITEMS_PER_PAGE;
+    const storedEnableTagMode = localStorage.getItem('enable-tag-mode');
     const localEnableTagMode =
-      localStorage.getItem('enable-tag-mode') === 'true';
+      storedEnableTagMode === null ? true : storedEnableTagMode === 'true';
     const localEnableBatchDelete =
       localStorage.getItem('enable-batch-delete') === 'true';
 
@@ -245,6 +246,7 @@ export const useChannelsData = () => {
         channelDates.push(channels[i]);
       } else {
         let tag = channels[i].tag ? channels[i].tag : '';
+        const tagDisplayName = tag === '' ? t('未设置标签') : `标签：${tag}`;
         let tagIndex = channelTags[tag];
         let tagChannelDates = undefined;
 
@@ -254,7 +256,7 @@ export const useChannelsData = () => {
             key: tag,
             id: tag,
             tag: tag,
-            name: '标签：' + tag,
+            name: tagDisplayName,
             group: '',
             used_quota: 0,
             response_time: 0,

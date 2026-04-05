@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Card, Avatar, Skeleton, Tag } from '@douyinfe/semi-ui';
+import { Card, Skeleton, Tag } from '@douyinfe/semi-ui';
 import { VChart } from '@visactor/react-vchart';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -50,13 +50,6 @@ const StatsCards = ({
                   onClick={item.onClick}
                 >
                   <div className='flex items-center'>
-                    <Avatar
-                      className='mr-3'
-                      size='small'
-                      color={item.avatarColor}
-                    >
-                      {item.icon}
-                    </Avatar>
                     <div>
                       <div className='text-xs text-gray-500'>{item.title}</div>
                       <div className='text-lg font-semibold'>

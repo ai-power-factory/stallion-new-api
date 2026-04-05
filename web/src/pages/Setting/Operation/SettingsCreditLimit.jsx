@@ -130,42 +130,6 @@ export default function SettingsCreditLimit(props) {
                   }
                 />
               </Col>
-              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-                <Form.InputNumber
-                  label={t('邀请新用户奖励额度')}
-                  field={'QuotaForInviter'}
-                  step={1}
-                  min={0}
-                  suffix={'Token'}
-                  extraText={''}
-                  placeholder={t('例如：2000')}
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      QuotaForInviter: String(value),
-                    })
-                  }
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col xs={24} sm={12} md={8} lg={8} xl={6}>
-                <Form.InputNumber
-                  label={t('新用户使用邀请码奖励额度')}
-                  field={'QuotaForInvitee'}
-                  step={1}
-                  min={0}
-                  suffix={'Token'}
-                  extraText={''}
-                  placeholder={t('例如：1000')}
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      QuotaForInvitee: String(value),
-                    })
-                  }
-                />
-              </Col>
             </Row>
             <Row>
               <Col>

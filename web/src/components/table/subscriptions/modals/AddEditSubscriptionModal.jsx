@@ -68,7 +68,7 @@ const AddEditSubscriptionModal = ({
   visible,
   handleClose,
   editingPlan,
-  placement = 'left',
+  placement = 'right',
   refresh,
   t,
 }) => {
