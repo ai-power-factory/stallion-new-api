@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Button,
   Space,
@@ -29,7 +30,11 @@ import {
   Dropdown,
 } from '@douyinfe/semi-ui';
 import { IconMore } from '@douyinfe/semi-icons';
-import { renderGroup, renderNumber, renderQuota } from '../../../helpers';
+import {
+  renderGroup,
+  renderQuota,
+  renderNumber,
+} from '../../../helpers/render';
 
 /**
  * Render user role
@@ -68,15 +73,25 @@ const renderRole = (role, t) => {
  */
 const renderUsername = (text, record) => {
   const remark = record.remark;
+  // 用户名可点击跳转到用户详情页
+  const usernameLink = (
+    <Link
+      to={`/console/user/${record.id}`}
+      style={{ color: 'inherit', textDecoration: 'none' }}
+      className='hover:underline'
+    >
+      {text}
+    </Link>
+  );
   if (!remark) {
-    return <span>{text}</span>;
+    return <span>{usernameLink}</span>;
   }
   const maxLen = 10;
   const displayRemark =
     remark.length > maxLen ? remark.slice(0, maxLen) + '…' : remark;
   return (
     <Space spacing={2}>
-      <span>{text}</span>
+      <span>{usernameLink}</span>
       <Tooltip content={remark} position='top' showArrow>
         <Tag color='white' shape='circle' className='!text-xs'>
           <div className='flex items-center gap-1'>
@@ -171,29 +186,6 @@ const renderQuotaUsage = (text, record, t) => {
 };
 
 /**
- * Render invite information
- */
-const renderInviteInfo = (text, record, t) => {
-  return (
-    <div>
-      <Space spacing={1}>
-        <Tag color='white' shape='circle' className='!text-xs'>
-          {t('邀请')}: {renderNumber(record.aff_count)}
-        </Tag>
-        <Tag color='white' shape='circle' className='!text-xs'>
-          {t('收益')}: {renderQuota(record.aff_history_quota)}
-        </Tag>
-        <Tag color='white' shape='circle' className='!text-xs'>
-          {record.inviter_id === 0
-            ? t('无邀请人')
-            : `${t('邀请人')}: ${record.inviter_id}`}
-        </Tag>
-      </Space>
-    </div>
-  );
-};
-
-/**
  * Render operations column
  */
 const renderOperations = (
@@ -217,6 +209,17 @@ const renderOperations = (
   }
 
   const moreMenu = [
+    {
+      node: 'item',
+      name: t('查看详情'),
+      onClick: () => {
+        // 跳转到用户详情页
+        window.location.href = `/console/user/${record.id}`;
+      },
+    },
+    {
+      node: 'divider',
+    },
     {
       node: 'item',
       name: t('订阅管理'),
@@ -344,11 +347,6 @@ export const getUsersColumns = ({
       render: (text, record, index) => {
         return <div>{renderRole(text, t)}</div>;
       },
-    },
-    {
-      title: t('邀请信息'),
-      dataIndex: 'invite',
-      render: (text, record, index) => renderInviteInfo(text, record, t),
     },
     {
       title: '',

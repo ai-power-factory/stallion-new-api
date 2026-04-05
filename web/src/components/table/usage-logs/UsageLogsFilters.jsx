@@ -18,8 +18,8 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Button, Form } from '@douyinfe/semi-ui';
-import { IconSearch } from '@douyinfe/semi-icons';
+import { Button, Dropdown, Form } from '@douyinfe/semi-ui';
+import { IconSearch, IconDownload } from '@douyinfe/semi-icons';
 
 import { DATE_RANGE_PRESETS } from '../../../constants/console.constants';
 
@@ -32,6 +32,8 @@ const LogsFilters = ({
   setLogType,
   loading,
   isAdminUser,
+  exporting,
+  handleExport,
   t,
 }) => {
   return (
@@ -51,7 +53,7 @@ const LogsFilters = ({
           <div className='col-span-1 lg:col-span-2'>
             <Form.DatePicker
               field='dateRange'
-              className='w-full'
+              className='w-full logs-date-range-picker'
               type='dateTimeRange'
               placeholder={[t('开始时间'), t('结束时间')]}
               showClear
@@ -183,6 +185,32 @@ const LogsFilters = ({
             >
               {t('列设置')}
             </Button>
+            {/* 导出下拉按钮 — 支持导出 Excel 和 CSV */}
+            <Dropdown
+              trigger='click'
+              position='bottomRight'
+              menu={[
+                {
+                  node: 'item',
+                  name: t('导出 Excel'),
+                  onClick: () => handleExport('xlsx'),
+                },
+                {
+                  node: 'item',
+                  name: t('导出 CSV'),
+                  onClick: () => handleExport('csv'),
+                },
+              ]}
+            >
+              <Button
+                type='tertiary'
+                icon={<IconDownload />}
+                loading={exporting}
+                size='small'
+              >
+                {t('导出')}
+              </Button>
+            </Dropdown>
           </div>
         </div>
       </div>

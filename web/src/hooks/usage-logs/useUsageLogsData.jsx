@@ -39,6 +39,7 @@ import {
 } from '../../helpers';
 import { ITEMS_PER_PAGE } from '../../constants';
 import { useTableCompactMode } from '../common/useTableCompactMode';
+import { useExportLogs } from '@/hooks/usage-logs/useExportLogs';
 import ParamOverrideEntry from '../../components/table/usage-logs/components/ParamOverrideEntry';
 
 export const useLogsData = () => {
@@ -258,6 +259,14 @@ export const useLogsData = () => {
       logType: formValues.logType ? parseInt(formValues.logType) : 0,
     };
   };
+
+  // 日志导出 Hook — 提供 exporting 状态和 handleExport 操作
+  // 必须在 getFormValues 定义之后调用，避免 temporal dead zone 错误
+  const { exporting, handleExport } = useExportLogs({
+    getFormValues,
+    isAdminUser,
+    t,
+  });
 
   // Statistics functions
   const getLogSelfStat = async () => {
@@ -857,6 +866,10 @@ export const useLogsData = () => {
     // Compact mode
     compactMode,
     setCompactMode,
+
+    // Export — 导出状态和操作
+    exporting,
+    handleExport,
 
     // User info modal
     showUserInfo,

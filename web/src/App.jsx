@@ -52,6 +52,7 @@ import SetupCheck from './components/layout/SetupCheck';
 
 const Home = lazy(() => import('./pages/Home'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const UserDetail = lazy(() => import('./pages/User/UserDetail'));
 const About = lazy(() => import('./pages/About'));
 const UserAgreement = lazy(() => import('./pages/UserAgreement'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
@@ -160,6 +161,16 @@ function App() {
           element={
             <AdminRoute>
               <Redemption />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path='/console/user/:id'
+          element={
+            <AdminRoute>
+              <Suspense fallback={<Loading></Loading>}>
+                <UserDetail />
+              </Suspense>
             </AdminRoute>
           }
         />

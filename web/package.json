@@ -13,6 +13,7 @@
     "axios": "1.13.5",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.11",
+    "file-saver": "^2.0.5",
     "history": "^5.3.0",
     "i18next": "^23.16.8",
     "i18next-browser-languagedetector": "^7.2.0",
@@ -39,7 +40,8 @@
     "remark-math": "^6.0.0",
     "sse.js": "^2.6.0",
     "unist-util-visit": "^5.0.0",
-    "use-debounce": "^10.0.4"
+    "use-debounce": "^10.0.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "dev": "vite",

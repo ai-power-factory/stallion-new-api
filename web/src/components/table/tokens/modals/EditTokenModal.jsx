@@ -63,6 +63,8 @@ const EditTokenModal = (props) => {
   const [models, setModels] = useState([]);
   const [groups, setGroups] = useState([]);
   const isEdit = props.editingToken.id !== undefined;
+  const apiBasePath = props.apiBasePath || '/api/token';
+  const groupsApiPath = props.groupsApiPath || '/api/user/self/groups';
 
   const getInitValues = () => ({
     name: '',
@@ -127,7 +129,7 @@ const EditTokenModal = (props) => {
   };
 
   const loadGroups = async () => {
-    let res = await API.get(`/api/user/self/groups`);
+    let res = await API.get(groupsApiPath);
     const { success, message, data } = res.data;
     if (success) {
       let localGroupOptions = Object.entries(data).map(([group, info]) => ({
@@ -151,7 +153,7 @@ const EditTokenModal = (props) => {
 
   const loadToken = async () => {
     setLoading(true);
-    let res = await API.get(`/api/token/${props.editingToken.id}`);
+    let res = await API.get(`${apiBasePath}/${props.editingToken.id}`);
     const { success, message, data } = res.data;
     if (success) {
       if (data.expired_time !== -1) {
@@ -221,7 +223,7 @@ const EditTokenModal = (props) => {
       }
       localInputs.model_limits = localInputs.model_limits.join(',');
       localInputs.model_limits_enabled = localInputs.model_limits.length > 0;
-      let res = await API.put(`/api/token/`, {
+      let res = await API.put(apiBasePath, {
         ...localInputs,
         id: parseInt(props.editingToken.id),
       });
@@ -258,7 +260,7 @@ const EditTokenModal = (props) => {
         }
         localInputs.model_limits = localInputs.model_limits.join(',');
         localInputs.model_limits_enabled = localInputs.model_limits.length > 0;
-        let res = await API.post(`/api/token/`, localInputs);
+        let res = await API.post(apiBasePath, localInputs);
         const { success, message } = res.data;
         if (success) {
           successCount++;
@@ -279,7 +281,7 @@ const EditTokenModal = (props) => {
 
   return (
     <SideSheet
-      placement={isEdit ? 'right' : 'left'}
+      placement='right'
       title={
         <Space>
           {isEdit ? (

@@ -17,25 +17,42 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import {
-  getUserIdFromLocalStorage,
-  showError,
-  formatMessageForAPI,
-  isValidMessage,
-} from './utils';
+import { showError, formatMessageForAPI, isValidMessage } from './utils';
 import axios from 'axios';
 import { MESSAGE_ROLES } from '../constants/playground.constants';
 
-export let API = axios.create({
-  baseURL: import.meta.env.VITE_REACT_APP_SERVER_URL
+const getBaseURL = () =>
+  import.meta.env.VITE_REACT_APP_SERVER_URL
     ? import.meta.env.VITE_REACT_APP_SERVER_URL
-    : '',
-  headers: {
-    'New-API-User': getUserIdFromLocalStorage(),
-    'Cache-Control': 'no-store',
-  },
-});
+    : '';
 
+const getUserFromStorage = () => {
+  try {
+    const raw = localStorage.getItem('user');
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw);
+  } catch (err) {
+    return null;
+  }
+};
+
+const buildAuthHeaders = () => {
+  const user = getUserFromStorage();
+  const userId = Number.isFinite(Number(user?.id)) ? Number(user.id) : -1;
+
+  const headers = {
+    'New-API-User': String(userId),
+    'Cache-Control': 'no-store',
+  };
+
+  if (user && typeof user.token === 'string' && user.token.length > 0) {
+    headers.Authorization = `Bearer ${user.token}`;
+  }
+
+  return headers;
+};
 
 function redirectToOAuthUrl(url, options = {}) {
   const { openInNewTab = false } = options;
@@ -48,7 +65,6 @@ function redirectToOAuthUrl(url, options = {}) {
 
   window.location.assign(targetUrl);
 }
-
 
 function patchAPIInstance(instance) {
   const originalGet = instance.get.bind(instance);
@@ -78,33 +94,52 @@ function patchAPIInstance(instance) {
   };
 }
 
-patchAPIInstance(API);
-
-export function updateAPI() {
-  API = axios.create({
-    baseURL: import.meta.env.VITE_REACT_APP_SERVER_URL
-      ? import.meta.env.VITE_REACT_APP_SERVER_URL
-      : '',
-    headers: {
-      'New-API-User': getUserIdFromLocalStorage(),
-      'Cache-Control': 'no-store',
+function attachInterceptors(instance) {
+  instance.interceptors.request.use(
+    (config) => {
+      const headers = buildAuthHeaders();
+      config.headers = config.headers || {};
+      config.headers['New-API-User'] = headers['New-API-User'];
+      config.headers['Cache-Control'] = headers['Cache-Control'];
+      if (headers.Authorization) {
+        config.headers.Authorization = headers.Authorization;
+      } else if (config.headers.Authorization) {
+        delete config.headers.Authorization;
+      }
+      return config;
     },
-  });
+    (error) => Promise.reject(error),
+  );
 
-  patchAPIInstance(API);
+  instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      // 如果请求配置中显式要求跳过全局错误处理，则不弹出默认错误提示
+      if (error.config && error.config.skipErrorHandler) {
+        return Promise.reject(error);
+      }
+      showError(error);
+      return Promise.reject(error);
+    },
+  );
 }
 
-API.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // 如果请求配置中显式要求跳过全局错误处理，则不弹出默认错误提示
-    if (error.config && error.config.skipErrorHandler) {
-      return Promise.reject(error);
-    }
-    showError(error);
-    return Promise.reject(error);
-  },
-);
+function createAPIInstance() {
+  const instance = axios.create({
+    baseURL: getBaseURL(),
+    withCredentials: true,
+    headers: buildAuthHeaders(),
+  });
+  patchAPIInstance(instance);
+  attachInterceptors(instance);
+  return instance;
+}
+
+export let API = createAPIInstance();
+
+export function updateAPI() {
+  API = createAPIInstance();
+}
 
 // playground
 
